@@ -7,11 +7,23 @@ import pygame
 import time
 import os 
 
+pygame.mixer.init()
+
+def cargarImagen(nombre):
+    ruta = os.path.join("Robot Sprite", nombre)
+    imagen = pygame.image.load(ruta)
+    return imagen
+
+def cargarSonido(nombre):
+    ruta = os.path.join("Audio", nombre)
+    sonido = pygame.mixer.Sound(ruta)
+    return sonido
+
 class Robot:
 
     def __init__(self):
         self.Nombre = "Nombre"
-        self.sprite = pygame.image.load("Robot Sprite\Idle (1).png")
+        self.sprite = cargarImagen("Idle (1).png")
         self.posx = 200
         self.posy = 200
 
