@@ -5,8 +5,20 @@
 
 import pygame
 import time
-import os 
+import os
+import pygame
+import serial
 
+arduino = serial.Serial(puerto, 9600, timeout=0)
+
+def serialCom():
+    try:
+        entrada = arduino.readline()
+        print(entrada)
+        
+    except:
+        print("Data could not be read")
+        
 class Robot:
 
     def __init__(self):
