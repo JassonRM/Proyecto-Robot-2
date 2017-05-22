@@ -19,16 +19,23 @@ def cargarSonido(nombre):
     sonido = pygame.mixer.Sound(ruta)
     return sonido
 
-class Robot:
+def scale_img(image,width,height):    
+    image = pygame.transform.smoothscale(image,(width,height))
+    return image
 
+Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),200,200), "run1":scale_img(cargarImagen("Run (1).png"),200,200), "run2":scale_img(cargarImagen("Run (2).png"),200,200), "run3":scale_img(cargarImagen("Run (3).png"),200,200), "run4":scale_img(cargarImagen("Run (4).png"),200,200), "run5":scale_img(cargarImagen("Run (5).png"),200,200), "run6":scale_img(cargarImagen("Run (6).png"),200,200), "run7":scale_img(cargarImagen("Run (7).png"),200,200), "run8":scale_img(cargarImagen("Run (8).png"),200,200)}
+global right
+right = True
+
+class Robot:
     def __init__(self):
         self.Nombre = "Nombre"
-        self.sprite = cargarImagen("Idle (1).png")
+        self.sprite = Sprite["idle1"]
         self.posx = 300
         self.posy = 300
         self.x_velocidad = 0
         self.y_velocidad = 0
-        self.aceleracion = 3
+        self.aceleracion = 1
     def get_nombre (self):
         return self.Nombre
     
@@ -45,13 +52,17 @@ class Robot:
 
     def acelerar_x(self,direccion): #direccion 1 acelera der , direccion -1 acelera izq
         self.x_velocidad += direccion*self.aceleracion
-        self.set_posx(self.x_velocidad) 
+        self.set_posx(self.x_velocidad)
     def go_left(self):
         pass
-    
-def scale_img(image,width,height):
-    image = pygame.transform.smoothscale(image,(width,height))
-    return image
+    def cambiar_sprite_derecha(self,nombre):
+        self.sprite = Sprite[nombre]
+        global right
+        right = True
+    def cambiar_sprite_izquierda(self,nombre):
+        global right 
+        right = False
+        self.sprite = pygame.transform.flip(Sprite[nombre],True,False)
 
 
 clock = pygame.time.Clock()
@@ -65,6 +76,7 @@ pygame.display.set_caption("Nombre ventana")
 
 def inGame (robot):
     in_Game = True
+    i = 2
     while in_Game :
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -72,32 +84,62 @@ def inGame (robot):
 
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_LEFT:
-                    robot.acelerar_x(-1)
+                    if robot.x_velocidad > 0:
+                        robot.acelerar_x(-2.25)
+                    else:
+                        robot.acelerar_x(-1)
+                    if i == 8:
+                        i = 1
+                    else:
+                        i += 1
+                    robot.cambiar_sprite_izquierda("run"+ str(i))
                 elif event.key == pygame.K_RIGHT:
-                    robot.acelerar_x(1)
+                    if robot.x_velocidad < 0:
+                        robot.acelerar_x(2.25)
+                    else:
+                        robot.acelerar_x(1)
+                    if i == 8:
+                        i = 1
+                    else:
+                        i += 1
+                    robot.cambiar_sprite_derecha("run"+ str(i))
                 pygame.event.clear()
                 pygame.event.post(event)
                 
             elif event.type == pygame.KEYUP:
-                if robot.x_velocidad == 0:
-                    pygame.event.clear()
-                elif event.key == pygame.K_LEFT:
-                    robot.acelerar_x(1)
-                elif  event.key == pygame.K_RIGHT:
-                    robot.acelerar_x(-1)
-                pygame.event.clear()
-                pygame.event.post(event)
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    if i == 8:
+                        i = 1                        
+                    if robot.x_velocidad < -1:
+                        robot.acelerar_x(1.5)
+                        robot.cambiar_sprite_izquierda("run"+ str(i))
+                        pygame.event.clear()
+                        pygame.event.post(event)
+                    elif robot.x_velocidad > 1:
+                        robot.acelerar_x(-1.5)
+                        robot.cambiar_sprite_derecha("run"+ str(i))
+                        pygame.event.clear()
+                        pygame.event.post(event)
+                    else:
+                        if right:
+                            robot.cambiar_sprite_derecha("idle1")
+                        else:
+                            robot.cambiar_sprite_izquierda("idle1")
+                        pygame.event.clear()
+                    i += 1
+                
+                
         
         ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.update()
-        clock.tick(30)
-
+        clock.tick(15)
 
     pygame.quit()
     quit()
 
 paco = Robot()
-paco.sprite = scale_img(paco.sprite,200,200)
 
 inGame(paco)
+
+
