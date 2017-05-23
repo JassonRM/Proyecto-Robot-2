@@ -3,22 +3,33 @@
 #Jasson Rodriguez
 #Marco Herrera
 
+#Importar librerias
 import pygame
 import time
 import os 
 
-pygame.mixer.init()
-
+#Funcion: cargarImagen
+#Entrada: nombre
+#Salida: imagen con ese nombre en el directorio Robot Sprite
+#Restricciones: nombre es un string
 def cargarImagen(nombre):
     ruta = os.path.join("Robot Sprite", nombre)
     imagen = pygame.image.load(ruta)
     return imagen
 
+#Funcion: cargarSonido
+#Entrada: nombre
+#Salida: sonido con ese nombre en el directorio audio
+#Restricciones: nombre es un string
 def cargarSonido(nombre):
     ruta = os.path.join("Audio", nombre)
     sonido = pygame.mixer.Sound(ruta)
     return sonido
 
+#Funcion: scale_img
+#Entradas: imagen, ancho y altura
+#Salida: imagen reescalada
+#Restricciones: imagen de tipo pygame, ancho y altura son enteros
 def scale_img(image,width,height):    
     image = pygame.transform.smoothscale(image,(width,height))
     return image
@@ -67,13 +78,21 @@ class Robot:
 
 clock = pygame.time.Clock()
 
+#Inicializar pygame
 pygame.init()
 
+#Inicializar el mixer de pygame
+pygame.mixer.init()
+
+#Crear ventana
 ventana = pygame.display.set_mode((800,600))
-pygame.display.set_caption("Nombre ventana")
+pygame.display.set_caption("Robot Virtual 2")
 
 
-
+#Funcion: inGame
+#Entrada: instancia del robot
+#Salida: Entradas y salidas de las animaciones
+#Restricciones: robot es una instancia
 def inGame (robot):
     in_Game = True
     i = 2
