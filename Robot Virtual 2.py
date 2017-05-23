@@ -34,7 +34,8 @@ def scale_img(image,width,height):
     image = pygame.transform.smoothscale(image,(width,height))
     return image
 
-Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),200,200), "run1":scale_img(cargarImagen("Run (1).png"),200,200), "run2":scale_img(cargarImagen("Run (2).png"),200,200), "run3":scale_img(cargarImagen("Run (3).png"),200,200), "run4":scale_img(cargarImagen("Run (4).png"),200,200), "run5":scale_img(cargarImagen("Run (5).png"),200,200), "run6":scale_img(cargarImagen("Run (6).png"),200,200), "run7":scale_img(cargarImagen("Run (7).png"),200,200), "run8":scale_img(cargarImagen("Run (8).png"),200,200)}
+spriteSize = 200
+Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize)}
 global right
 right = True
 
