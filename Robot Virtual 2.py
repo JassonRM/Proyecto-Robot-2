@@ -49,6 +49,7 @@ class Robot:
         self.x_velocidad = 0
         self.y_velocidad = 0
         self.aceleracion = 1
+        self.imagen = 2
     def get_nombre (self):
         return self.Nombre
     
@@ -77,11 +78,49 @@ class Robot:
         right = False
         self.sprite = pygame.transform.flip(Sprite[nombre],True,False)
 
+    def turnRight(self):
+        if self.x_velocidad < 0:
+            self.acelerar_x(2.25)
+        else:
+            self.acelerar_x(1)
+        if self.imagen == 8:
+            self.imagen = 1
+        else:
+            self.imagen += 1
+        self.cambiar_sprite_derecha("run"+ str(self.imagen))
 
-clock = pygame.time.Clock()
+    def turnLeft(self):
+        if self.x_velocidad < 0:
+            self.acelerar_x(-2.25)
+        else:
+            self.acelerar_x(-1)
+        if self.imagen == 8:
+            self.imagen = 1
+        else:
+            self.imagen += 1
+        self.cambiar_sprite_izquierda("run"+ str(self.imagen))
+        
+    def stop(self):
+        if self.imagen == 8:
+            self.imagen = 1                        
+        if self.x_velocidad < -1:
+            self.acelerar_x(1.5)
+            self.cambiar_sprite_izquierda("run"+ str(self.imagen))
+        elif self.x_velocidad > 1:
+            self.acelerar_x(-1.5)
+            self.cambiar_sprite_derecha("run"+ str(self.imagen))       
+        else:
+            if right:
+                self.cambiar_sprite_derecha("idle1")
+            else:
+                self.cambiar_sprite_izquierda("idle1")
+        self.imagen += 1
+
+
 
 #Inicializar pygame
 pygame.init()
+clock = pygame.time.Clock()
 
 #Inicializar el mixer de pygame
 pygame.mixer.init()
@@ -91,47 +130,6 @@ windowWidth = 800
 windowHeight = 600
 ventana = pygame.display.set_mode((windowWidth,windowHeight))
 pygame.display.set_caption("Robot Virtual 2")
-i = 2
-def turnRight(robot):
-    global i
-    if robot.x_velocidad < 0:
-        robot.acelerar_x(2.25)
-    else:
-        robot.acelerar_x(1)
-    if i == 8:
-        i = 1
-    else:
-        i += 1
-    robot.cambiar_sprite_derecha("run"+ str(i))
-
-def turnLeft(robot):
-    global i
-    if robot.x_velocidad < 0:
-        robot.acelerar_x(-2.25)
-    else:
-        robot.acelerar_x(-1)
-    if i == 8:
-        i = 1
-    else:
-        i += 1
-    robot.cambiar_sprite_izquierda("run"+ str(i))
-    
-def stop(robot):
-    global i
-    if i == 8:
-        i = 1                        
-    if robot.x_velocidad < -1:
-        robot.acelerar_x(1.5)
-        robot.cambiar_sprite_izquierda("run"+ str(i))
-    elif robot.x_velocidad > 1:
-        robot.acelerar_x(-1.5)
-        robot.cambiar_sprite_derecha("run"+ str(i))       
-    else:
-        if right:
-            robot.cambiar_sprite_derecha("idle1")
-        else:
-            robot.cambiar_sprite_izquierda("idle1")
-    i += 1
 
 #Funcion: inGame
 #Entrada: instancia del robot
@@ -146,19 +144,19 @@ def inGame (robot):
 
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_LEFT:
-                    turnLeft(robot)
+                    robot.turnLeft()
                 elif event.key == pygame.K_RIGHT:
-                    turnRight(robot)
+                    robot.turnRight()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    stop(robot)
+                    robot.stop()
             pygame.event.clear()
             pygame.event.post(event)
                        
         ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.update()
-        clock.tick(15)
+        clock.tick(30)
 
     pygame.quit()
     sys.exit()
