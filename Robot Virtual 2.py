@@ -9,6 +9,7 @@ import time
 import os
 import sys
 
+
 #Funcion: cargarImagen
 #Entrada: nombre
 #Salida: imagen con ese nombre en el directorio Robot Sprite
@@ -17,6 +18,7 @@ def cargarImagen(nombre):
     ruta = os.path.join("Robot Sprite", nombre)
     imagen = pygame.image.load(ruta)
     return imagen
+
 
 #Funcion: cargarSonido
 #Entrada: nombre
@@ -55,11 +57,13 @@ class Robot:
     
     def get_posx(self):
         return self.posx
+    
     def get_posy(self):
         return self.posy
     
     def set_posx(self, pos):
         self.posx += pos
+        
     def set_posy(self, pos):
         self.posy += pos
 
