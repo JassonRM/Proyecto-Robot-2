@@ -8,7 +8,17 @@ import pygame
 import time
 import os
 import sys
+import serial
 
+arduino = serial.Serial(puerto, 9600, timeout=0)
+
+def serialCom():
+    try:
+        entrada = arduino.readline()
+        print(entrada)
+        
+    except:
+        print("Data could not be read")
 
 #Funcion: cargarImagen
 #Entrada: nombre
