@@ -91,7 +91,47 @@ windowWidth = 800
 windowHeight = 600
 ventana = pygame.display.set_mode((windowWidth,windowHeight))
 pygame.display.set_caption("Robot Virtual 2")
+i = 2
+def turnRight(robot):
+    global i
+    if robot.x_velocidad < 0:
+        robot.acelerar_x(2.25)
+    else:
+        robot.acelerar_x(1)
+    if i == 8:
+        i = 1
+    else:
+        i += 1
+    robot.cambiar_sprite_derecha("run"+ str(i))
 
+def turnLeft(robot):
+    global i
+    if robot.x_velocidad < 0:
+        robot.acelerar_x(-2.25)
+    else:
+        robot.acelerar_x(-1)
+    if i == 8:
+        i = 1
+    else:
+        i += 1
+    robot.cambiar_sprite_izquierda("run"+ str(i))
+    
+def stop(robot):
+    global i
+    if i == 8:
+        i = 1                        
+    if robot.x_velocidad < -1:
+        robot.acelerar_x(1.5)
+        robot.cambiar_sprite_izquierda("run"+ str(i))
+    elif robot.x_velocidad > 1:
+        robot.acelerar_x(-1.5)
+        robot.cambiar_sprite_derecha("run"+ str(i))       
+    else:
+        if right:
+            robot.cambiar_sprite_derecha("idle1")
+        else:
+            robot.cambiar_sprite_izquierda("idle1")
+    i += 1
 
 #Funcion: inGame
 #Entrada: instancia del robot
@@ -99,7 +139,6 @@ pygame.display.set_caption("Robot Virtual 2")
 #Restricciones: robot es una instancia
 def inGame (robot):
     in_Game = True
-    i = 2
     while in_Game :
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -107,52 +146,15 @@ def inGame (robot):
 
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_LEFT:
-                    if robot.x_velocidad > 0:
-                        robot.acelerar_x(-2.25)
-                    else:
-                        robot.acelerar_x(-1)
-                    if i == 8:
-                        i = 1
-                    else:
-                        i += 1
-                    robot.cambiar_sprite_izquierda("run"+ str(i))
+                    turnLeft(robot)
                 elif event.key == pygame.K_RIGHT:
-                    if robot.x_velocidad < 0:
-                        robot.acelerar_x(2.25)
-                    else:
-                        robot.acelerar_x(1)
-                    if i == 8:
-                        i = 1
-                    else:
-                        i += 1
-                    robot.cambiar_sprite_derecha("run"+ str(i))
-                pygame.event.clear()
-                pygame.event.post(event)
-                
+                    turnRight(robot)
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    if i == 8:
-                        i = 1                        
-                    if robot.x_velocidad < -1:
-                        robot.acelerar_x(1.5)
-                        robot.cambiar_sprite_izquierda("run"+ str(i))
-                        pygame.event.clear()
-                        pygame.event.post(event)
-                    elif robot.x_velocidad > 1:
-                        robot.acelerar_x(-1.5)
-                        robot.cambiar_sprite_derecha("run"+ str(i))
-                        pygame.event.clear()
-                        pygame.event.post(event)
-                    else:
-                        if right:
-                            robot.cambiar_sprite_derecha("idle1")
-                        else:
-                            robot.cambiar_sprite_izquierda("idle1")
-                        pygame.event.clear()
-                    i += 1
-                
-                
-        
+                    stop(robot)
+            pygame.event.clear()
+            pygame.event.post(event)
+                       
         ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.update()
