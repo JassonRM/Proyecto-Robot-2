@@ -6,7 +6,8 @@
 #Importar librerias
 import pygame
 import time
-import os 
+import os
+import sys
 
 #Funcion: cargarImagen
 #Entrada: nombre
@@ -86,7 +87,9 @@ pygame.init()
 pygame.mixer.init()
 
 #Crear ventana
-ventana = pygame.display.set_mode((800,600))
+windowWidth = 800
+windowHeight = 600
+ventana = pygame.display.set_mode((windowWidth,windowHeight))
 pygame.display.set_caption("Robot Virtual 2")
 
 
@@ -156,7 +159,7 @@ def inGame (robot):
         clock.tick(15)
 
     pygame.quit()
-    quit()
+    sys.exit()
 
 paco = Robot()
 
