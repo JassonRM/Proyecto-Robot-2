@@ -8,7 +8,7 @@ import pygame
 import time
 import os
 import sys
-
+from threading import Thread
 
 #Funcion: cargarImagen
 #Entrada: nombre
@@ -38,7 +38,7 @@ def scale_img(image,width,height):
     return image
 
 spriteSize = 200
-Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize)}
+Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize), "jump1":scale_img(cargarImagen("Jump (1).png"),spriteSize,spriteSize), "jump2":scale_img(cargarImagen("Jump (2).png"),spriteSize,spriteSize), "jump3":scale_img(cargarImagen("Jump (3).png"),spriteSize,spriteSize), "jump4":scale_img(cargarImagen("Jump (4).png"),spriteSize,spriteSize), "jump5":scale_img(cargarImagen("Jump (5).png"),spriteSize,spriteSize), "jump6":scale_img(cargarImagen("Jump (6).png"),spriteSize,spriteSize), "jump7":scale_img(cargarImagen("Jump (7).png"),spriteSize,spriteSize), "jump8":scale_img(cargarImagen("Jump (8).png"),spriteSize,spriteSize), "jump9":scale_img(cargarImagen("Jump (9).png"),spriteSize,spriteSize), "jump10":scale_img(cargarImagen("Jump (10).png"),spriteSize,spriteSize)}
 global right
 right = True
 
@@ -52,6 +52,7 @@ class Robot:
         self.y_velocidad = 0
         self.aceleracion = 1
         self.imagen = 2
+        self.tiempo = 0
     def get_nombre (self):
         return self.Nombre
     
@@ -120,6 +121,28 @@ class Robot:
                 self.cambiar_sprite_izquierda("idle1")
         self.imagen += 1
 
+    def jump(self):
+        v0 = 1000
+        aceleracion = -4000
+        posy = 300
+        delta_pos = v0 * self.tiempo + (aceleracion * self.tiempo ** 2) / 2
+        self.tiempo += 1 / 30
+        self.posy = posy - delta_pos
+        if delta_pos < 0:
+            self.posy = 300
+            self.tiempo = 0
+        self.imagen = int(self.tiempo // (0.5666666666666667 / 10))
+        if self.imagen == 0:
+            if right:
+                self.cambiar_sprite_derecha("idle1")
+            else:
+                self.cambiar_sprite_izquierda("idle1")
+        else:
+            if right:
+                self.cambiar_sprite_derecha("jump"+ str(self.imagen))
+            else:
+                self.cambiar_sprite_izquierda("jump"+ str(self.imagen))
+            
 
 
 #Inicializar pygame
@@ -145,15 +168,19 @@ def inGame (robot):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
-
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_LEFT:
                     robot.turnLeft()
                 elif event.key == pygame.K_RIGHT:
                     robot.turnRight()
+                elif event.key == pygame.K_UP:
+                        robot.jump()                    
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     robot.stop()
+                if event.key == pygame.K_UP:
+                    if robot.tiempo != 0:
+                        robot.jump()
             pygame.event.clear()
             pygame.event.post(event)
                        
@@ -168,5 +195,4 @@ def inGame (robot):
 paco = Robot()
 
 inGame(paco)
-
 
