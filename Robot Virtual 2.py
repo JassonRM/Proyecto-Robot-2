@@ -181,7 +181,11 @@ def inGame (robot):
     sys.exit()
 
 def controller():
-    while 
+    while inGame:
+        if keys["X"] > 600:
+            turnRight()
+        elif keys["X"] < 400:
+            turnLeft()
 
 
     
