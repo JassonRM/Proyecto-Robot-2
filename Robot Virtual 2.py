@@ -162,34 +162,16 @@ windowHeight = 600
 ventana = pygame.display.set_mode((windowWidth,windowHeight))
 pygame.display.set_caption("Robot Virtual 2")
 
+#Variable del juego
+in_Game = True
+
 #Funcion: inGame
 #Entrada: instancia del robot
 #Salida: Entradas y salidas de las animaciones
 #Restricciones: robot es una instancia
 def inGame (robot):
-    in_Game = True
-    while in_Game :
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                in_Game = False
-            if event.type == pygame.KEYDOWN :
-                if event.key == pygame.K_LEFT:
-                    robot.turnLeft()
-                elif event.key == pygame.K_RIGHT:
-                    robot.turnRight()
-                elif event.key == pygame.K_UP:
-                    robot.jump()
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    robot.stop()
-                if event.key == pygame.K_UP:
-                    if robot.tiempo != 0:
-                        robot.jump()
-                    else:
-                        robot.stop()
-            pygame.event.clear()
-            pygame.event.post(event)
-                       
+    control.start()
+    while in_Game:                       
         ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.update()
@@ -197,6 +179,13 @@ def inGame (robot):
 
     pygame.quit()
     sys.exit()
+
+def controller():
+    while 
+
+
+    
+control = Thread(target=controller, args=())
 
 paco = Robot()
 
