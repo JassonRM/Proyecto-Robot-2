@@ -15,7 +15,7 @@ arduino = serial.Serial(puerto, 9600, timeout=0)
 def serialCom():
     try:
         entrada = arduino.readline()
-        print(entrada)
+        keys = eval(entrada)
         
     except:
         print("Data could not be read")
