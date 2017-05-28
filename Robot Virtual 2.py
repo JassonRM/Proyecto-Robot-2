@@ -14,14 +14,13 @@ from threading import Thread
 puerto = 'COM3'
 arduino = serial.Serial(puerto, 9600, timeout=None)
 arduino.flushInput()
+
+
 def serialCom():
-    while True:
         try:
             entrada = str(arduino.readline())
-            global keys
-            keys = eval(entrada[2:-5])
-            print( keys)
-            
+            boton = eval(entrada[(entrada.find("{")):entrada.find("}")+1])
+            return boton
         except:
             print("Data could not be read")
 
@@ -100,45 +99,18 @@ class Robot:
         right = False
         self.sprite = pygame.transform.flip(Sprite[nombre],True,False)
 
-    def turnRight(self):
-        if self.x_velocidad < 0:
-            self.acelerar_x(2.25)
-        else:
-            self.acelerar_x(1)
+    def run(self,velocidad):
+        self.set_posx((velocidad - 502) // 40)
         if self.tiempo == 0:
             if self.imagen >= 8:
                 self.imagen = 1
             else:
-                self.imagen += 0.5
-            self.cambiar_sprite_derecha("run"+ str(int(self.imagen)))
-
-    def turnLeft(self):
-        if self.x_velocidad < 0:
-            self.acelerar_x(-2.25)
-        else:
-            self.acelerar_x(-1)
-        if self.tiempo == 0:
-            if self.imagen >= 8:
-                self.imagen = 1
+                self.imagen += abs((velocidad - 502)/ 502)
+            if velocidad > 550:
+                self.cambiar_sprite_derecha("run"+ str(int(self.imagen)))
             else:
-                self.imagen += 0.5
-            self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
-        
-    def stop(self):
-        if self.imagen >= 8:
-            self.imagen = 1                        
-        if self.x_velocidad < -1:
-            self.acelerar_x(1.5)
-            self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
-        elif self.x_velocidad > 1:
-            self.acelerar_x(-1.5)
-            self.cambiar_sprite_derecha("run"+ str(int(self.imagen)))       
-        else:
-            if right:
-                self.cambiar_sprite_derecha("idle1")
-            else:
-                self.cambiar_sprite_izquierda("idle1")
-        self.imagen += 0.5
+                self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
+    
 
     def jump(self):
         v0 = 1000
@@ -186,10 +158,14 @@ in_Game = True
 #Salida: Entradas y salidas de las animaciones
 #Restricciones: robot es una instancia
 def inGame (robot):
-<<<<<<< HEAD
+    global in_Game
+    control = Thread(target=controller, args=(robot,))
     control.start()
     while in_Game:                       
-
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                in_Game = False
+        
         ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.update()
@@ -198,16 +174,24 @@ def inGame (robot):
     pygame.quit()
     sys.exit()
 
-def controller():
-    while inGame:
-        if keys["X"] > 600:
-            turnRight()
-        elif keys["X"] < 400:
-            turnLeft()
-
+def controller(robot):
+    while in_Game:
+        keys = serialCom()
+        if keys != None:
+            if keys["X"] > 550:
+                robot.run(keys["X"])
+            elif keys["X"] < 450:
+                robot.run(keys["X"])
+            """
+            elif right:
+                robot.cambiar_sprite_derecha("idle1")
+            else:
+                robot.cambiar_sprite_izquierda("idle1")
+            """
 
     
-control = Thread(target=controller, args=())
+
+
 
 paco = Robot()
 serialInput = Thread(target=serialCom, args=())
