@@ -11,15 +11,16 @@ import sys
 import serial
 from threading import Thread
 
-puerto = '/dev/cu.usbmodem1411'
+puerto = 'COM3'
 arduino = serial.Serial(puerto, 9600, timeout=None)
-
+arduino.flushInput()
 def serialCom():
     while True:
         try:
-            entrada = arduino.readline()
-            #keys = eval(entrada)
-            print(entrada)
+            entrada = str(arduino.readline())
+            global keys
+            keys = eval(entrada[2:-5])
+            print( keys)
             
         except:
             print("Data could not be read")
@@ -185,6 +186,7 @@ def inGame (robot):
     in_Game = True
     serialInput.start()
     while in_Game :
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
