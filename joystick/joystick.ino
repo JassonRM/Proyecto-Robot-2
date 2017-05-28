@@ -20,5 +20,5 @@ String Data = "{'X' : " + DataEjeX + ", 'Y' : " + DataEjeY + "}";
 
 Serial.println(Data);
 
-delay(1000 / 30);
+delay(30);
 }
