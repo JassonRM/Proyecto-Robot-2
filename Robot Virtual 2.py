@@ -8,7 +8,22 @@ import pygame
 import time
 import os
 import sys
+import serial
 from threading import Thread
+
+puerto = 'COM3'
+arduino = serial.Serial(puerto, 9600, timeout=None)
+arduino.flushInput()
+def serialCom():
+    while True:
+        try:
+            entrada = str(arduino.readline())
+            global keys
+            keys = eval(entrada[2:-5])
+            print( keys)
+            
+        except:
+            print("Data could not be read")
 
 #Funcion: cargarImagen
 #Entrada: nombre
@@ -25,6 +40,7 @@ def cargarImagen(nombre):
 #Salida: sonido con ese nombre en el directorio audio
 #Restricciones: nombre es un string
 def cargarSonido(nombre):
+    
     ruta = os.path.join("Audio", nombre)
     sonido = pygame.mixer.Sound(ruta)
     return sonido
@@ -168,7 +184,9 @@ pygame.display.set_caption("Robot Virtual 2")
 #Restricciones: robot es una instancia
 def inGame (robot):
     in_Game = True
+    serialInput.start()
     while in_Game :
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
@@ -199,6 +217,6 @@ def inGame (robot):
     sys.exit()
 
 paco = Robot()
-
+serialInput = Thread(target=serialCom, args=())
 inGame(paco)
 
