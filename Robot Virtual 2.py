@@ -20,7 +20,6 @@ def serialCom():
         try:
             entrada = str(arduino.readline())
             keys = eval(entrada[(entrada.find("{")):entrada.find("}")+1])
-            print (keys)
             return keys
         except:
             print("Data could not be read")
@@ -103,7 +102,6 @@ class Robot:
     def run(self,velocidad):
         self.set_posx((velocidad - 502) // 40)
         if self.tiempo == 0:
-            print (self.imagen)
             if self.imagen >= 8:
                 self.imagen = 1
             else:
@@ -176,13 +174,15 @@ def inGame (robot):
     pygame.quit()
     sys.exit()
 
+
 cancion = "High.wav"
 cargarSonido(cancion)
 
 def controller(robot):
     music_on = False
+    musica_anterior = 1
     while in_Game:
-        keys = serialCom()
+        keys = serialCom()  
         if keys != None :
             if keys["X"] > 561 and robot.get_posx() < windowWidth - 125:
                 robot.run(keys["X"])
@@ -192,24 +192,16 @@ def controller(robot):
                 robot.cambiar_sprite_derecha("idle1")
             else:
                 robot.cambiar_sprite_izquierda("idle1")
-                
-            if keys["boton1"] == 1 and not music_on:
-                if pygame.mixer.music.get_pos() != -1:
-                    pygame.mixer.music.unpause()
-                else:
-                    pygame.mixer.music.play(-1)
-                music_on = True         
-            elif keys["boton1"] == 1:
-                pygame.mixer.music.pause()
-                music_on = False
-            
-                
-            
-
-    
-
-
-
+            if keys["musica"] == 1 and musica_anterior == 0 and not music_on:
+                        if pygame.mixer.music.get_pos() != -1:
+                            pygame.mixer.music.unpause()
+                        else:
+                            pygame.mixer.music.play(-1)
+                        music_on = True         
+            elif keys["musica"] == 1 and musica_anterior == 0 :
+                        pygame.mixer.music.pause()
+                        music_on = False
+            musica_anterior = keys["musica"]
 paco = Robot()
 serialInput = Thread(target=serialCom, args=())
 inGame(paco)
