@@ -19,8 +19,9 @@ arduino.flushInput()
 def serialCom():
         try:
             entrada = str(arduino.readline())
-            boton = eval(entrada[(entrada.find("{")):entrada.find("}")+1])
-            return boton
+            keys = eval(entrada[(entrada.find("{")):entrada.find("}")+1])
+            print (keys)
+            return keys
         except:
             print("Data could not be read")
 
@@ -41,7 +42,7 @@ def cargarImagen(nombre):
 def cargarSonido(nombre):
     
     ruta = os.path.join("Audio", nombre)
-    sonido = pygame.mixer.Sound(ruta)
+    sonido = pygame.mixer.music.load(ruta)
     return sonido
 
 #Funcion: scale_img
@@ -102,12 +103,13 @@ class Robot:
     def run(self,velocidad):
         self.set_posx((velocidad - 502) // 40)
         if self.tiempo == 0:
+            print (self.imagen)
             if self.imagen >= 8:
                 self.imagen = 1
             else:
-                self.imagen += abs((velocidad - 502)/ 502)
+                self.imagen += abs((velocidad - 511.5)/ 511.5)
             if velocidad > 550:
-                self.cambiar_sprite_derecha("run"+ str(int(self.imagen)))
+                self.cambiar_sprite_derecha("run"+ str(int((self.imagen))))
             else:
                 self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
     
@@ -165,7 +167,7 @@ def inGame (robot):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
-        
+                        
         ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.update()
@@ -174,18 +176,32 @@ def inGame (robot):
     pygame.quit()
     sys.exit()
 
+cancion = "High.wav"
+cargarSonido(cancion)
+
 def controller(robot):
+    music_on = False
     while in_Game:
         keys = serialCom()
         if keys != None :
-            if keys["X"] > 550 and robot.get_posx() < windowWidth - 125:
+            if keys["X"] > 561 and robot.get_posx() < windowWidth - 125:
                 robot.run(keys["X"])
-            elif keys["X"] < 450 and robot.get_posx() > -75:
+            elif keys["X"] < 461 and robot.get_posx() > -75:
                 robot.run(keys["X"])
             elif right:
                 robot.cambiar_sprite_derecha("idle1")
             else:
                 robot.cambiar_sprite_izquierda("idle1")
+                
+            if keys["boton1"] == 1 and not music_on:
+                if pygame.mixer.music.get_pos() != -1:
+                    pygame.mixer.music.unpause()
+                else:
+                    pygame.mixer.music.play(-1)
+                music_on = True         
+            elif keys["boton1"] == 1:
+                pygame.mixer.music.pause()
+                music_on = False
             
                 
             
