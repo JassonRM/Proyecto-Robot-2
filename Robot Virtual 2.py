@@ -145,7 +145,7 @@ clock = pygame.time.Clock()
 pygame.mixer.init()
 
 #Crear ventana
-windowWidth = 800
+windowWidth = 1000
 windowHeight = 600
 ventana = pygame.display.set_mode((windowWidth,windowHeight))
 pygame.display.set_caption("Robot Virtual 2")
@@ -177,17 +177,18 @@ def inGame (robot):
 def controller(robot):
     while in_Game:
         keys = serialCom()
-        if keys != None:
-            if keys["X"] > 550:
+        if keys != None :
+            if keys["X"] > 550 and robot.get_posx() < windowWidth - 125:
                 robot.run(keys["X"])
-            elif keys["X"] < 450:
+            elif keys["X"] < 450 and robot.get_posx() > -75:
                 robot.run(keys["X"])
-            """
             elif right:
                 robot.cambiar_sprite_derecha("idle1")
             else:
                 robot.cambiar_sprite_izquierda("idle1")
-            """
+            
+                
+            
 
     
 
