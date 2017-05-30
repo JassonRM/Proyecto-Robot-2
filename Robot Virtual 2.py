@@ -261,7 +261,7 @@ def controller(robot):
                 else:
                     pygame.mixer.music.play(-1)
                 music_on = True         
-            if keys["A"] == 0 and musica_anterior == 1 :
+            elif keys["A"] == 0 and musica_anterior == 1 :
                 pygame.mixer.music.pause()
                 music_on = False
             musica_anterior = keys["A"]
