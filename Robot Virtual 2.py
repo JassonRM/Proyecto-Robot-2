@@ -14,7 +14,8 @@ from threading import Thread
 puerto = 'COM3'
 arduino = serial.Serial(puerto, 9600, timeout=None)
 arduino.flushInput()
-
+global in_bullet
+in_bullet = True
 
 def serialCom():
         try:
@@ -53,9 +54,14 @@ def scale_img(image,width,height):
     return image
 
 spriteSize = 200
-Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize), "jump1":scale_img(cargarImagen("Jump (1).png"),spriteSize,spriteSize), "jump2":scale_img(cargarImagen("Jump (2).png"),spriteSize,spriteSize), "jump3":scale_img(cargarImagen("Jump (3).png"),spriteSize,spriteSize), "jump4":scale_img(cargarImagen("Jump (4).png"),spriteSize,spriteSize), "jump5":scale_img(cargarImagen("Jump (5).png"),spriteSize,spriteSize), "jump6":scale_img(cargarImagen("Jump (6).png"),spriteSize,spriteSize), "jump7":scale_img(cargarImagen("Jump (7).png"),spriteSize,spriteSize), "jump8":scale_img(cargarImagen("Jump (8).png"),spriteSize,spriteSize), "jump9":scale_img(cargarImagen("Jump (9).png"),spriteSize,spriteSize), "jump10":scale_img(cargarImagen("Jump (10).png"),spriteSize,spriteSize)}
+bulletSize = 20
+Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize), "jump1":scale_img(cargarImagen("Jump (1).png"),spriteSize,spriteSize), "jump2":scale_img(cargarImagen("Jump (2).png"),spriteSize,spriteSize), "jump3":scale_img(cargarImagen("Jump (3).png"),spriteSize,spriteSize), "jump4":scale_img(cargarImagen("Jump (4).png"),spriteSize,spriteSize), "jump5":scale_img(cargarImagen("Jump (5).png"),spriteSize,spriteSize), "jump6":scale_img(cargarImagen("Jump (6).png"),spriteSize,spriteSize), "jump7":scale_img(cargarImagen("Jump (7).png"),spriteSize,spriteSize), "jump8":scale_img(cargarImagen("Jump (8).png"),spriteSize,spriteSize), "jump9":scale_img(cargarImagen("Jump (9).png"),spriteSize,spriteSize), "jump10":scale_img(cargarImagen("Jump (10).png"),spriteSize,spriteSize)
+          , "run_s1":scale_img(cargarImagen("RunShoot (1).png"),spriteSize,spriteSize), "run_s2":scale_img(cargarImagen("RunShoot (2).png"),spriteSize,spriteSize),"run_s3":scale_img(cargarImagen("RunShoot (3).png"),spriteSize,spriteSize), "run_s4":scale_img(cargarImagen("RunShoot (4).png"),spriteSize,spriteSize), "run_s5":scale_img(cargarImagen("RunShoot (5).png"),spriteSize,spriteSize), "run_s6":scale_img(cargarImagen("RunShoot (6).png"),spriteSize,spriteSize), "run_s7":scale_img(cargarImagen("RunShoot (7).png"),spriteSize,spriteSize), "run_s8":scale_img(cargarImagen("RunShoot (8).png"),spriteSize,spriteSize), "shoot1":scale_img(cargarImagen("Shoot (1).png"),spriteSize,spriteSize), "bullet1":scale_img(cargarImagen("Bullet_001.png"),bulletSize,bulletSize)}
 global right
 right = True
+
+global inbullet
+inbullet = False
 
 class Robot:
     def __init__(self):
@@ -111,7 +117,42 @@ class Robot:
             else:
                 self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
     
+    def runshoot(self,velocidad):
+        self.set_posx((velocidad - 502) // 40)
+        if self.tiempo == 0:
+            if self.imagen >= 8:
+                self.imagen = 1
+            else:
+                self.imagen += abs((velocidad - 511.5)/ 511.5)
+            if velocidad > 550:
+                self.cambiar_sprite_derecha("run_s"+ str(int((self.imagen))))
+            else:
+                self.cambiar_sprite_izquierda("run_s"+ str(int(self.imagen)))
 
+    def shoot(self):
+        if right:
+            self.cambiar_sprite_derecha("shoot1")
+        else:
+            self.cambiar_sprite_izquierda("shoot1")
+
+    def bullet(self,posx,posy):
+        global inbullet
+        inbullet = True
+        if right:
+            aumenta = 1
+            imagen_bala = Sprite["bullet1"]
+        else:
+            aumenta = -1
+            imagen_bala = pygame.transform.flip(Sprite["bullet1"],True,False)
+        while posx > 0 and posx < 1000:
+            posx += aumenta
+            ventana.blit(imagen_bala,(posx,posy))
+            pygame.display.flip()
+        inbullet = False
+            
+            
+            
+        return None
     def jump(self):
         v0 = 1000
         aceleracion = -4000
@@ -161,14 +202,14 @@ def inGame (robot):
     global in_Game
     control = Thread(target=controller, args=(robot,))
     control.start()
-    while in_Game:                       
+    while in_Game:
+        ventana.fill((255,255,255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
                         
-        ventana.fill((255,255,255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
-        pygame.display.update()
+        pygame.display.flip()
         clock.tick(30)
 
     pygame.quit()
@@ -180,28 +221,52 @@ cargarSonido(cancion)
 
 def controller(robot):
     music_on = False
-    musica_anterior = 1
+    musica_anterior = 0
+    disparo_anterior = 0
     while in_Game:
-        keys = serialCom()  
+        keys = serialCom()
         if keys != None :
             if keys["X"] > 561 and robot.get_posx() < windowWidth - 125:
-                robot.run(keys["X"])
+                if keys["B"] == 1 and robot.tiempo == 0:
+                    robot.runshoot(keys["X"])
+                    if disparo_anterior == 0 and not inbullet:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+200,robot.get_posy()+100))
+                        bullet_t.start()
+                else:
+                    robot.run(keys["X"])
             elif keys["X"] < 461 and robot.get_posx() > -75:
-                robot.run(keys["X"])
+                if keys["B"] == 1 and robot.tiempo == 0:
+                    robot.runshoot(keys["X"])
+                    if disparo_anterior == 0 and not inbullet:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
+                        bullet_t.start()
+                else:
+                    robot.run(keys["X"])
+            elif keys["B"] == 1 and robot.tiempo == 0:
+                robot.shoot()
+                if disparo_anterior == 0 and not inbullet:
+                    if right:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+150,robot.get_posy()+100))
+                    else:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
+                    bullet_t.start()
             elif right:
                 robot.cambiar_sprite_derecha("idle1")
-            else:
+            elif not right:
                 robot.cambiar_sprite_izquierda("idle1")
-            if keys["musica"] == 1 and musica_anterior == 0 and not music_on:
-                        if pygame.mixer.music.get_pos() != -1:
-                            pygame.mixer.music.unpause()
-                        else:
-                            pygame.mixer.music.play(-1)
-                        music_on = True         
-            elif keys["musica"] == 1 and musica_anterior == 0 :
-                        pygame.mixer.music.pause()
-                        music_on = False
-            musica_anterior = keys["musica"]
+            disparo_anterior = keys["B"]
+            if keys["A"] == 0 and musica_anterior == 1 and not music_on:
+                if pygame.mixer.music.get_pos() != -1:
+                    pygame.mixer.music.unpause()
+                else:
+                    pygame.mixer.music.play(-1)
+                music_on = True         
+            if keys["A"] == 0 and musica_anterior == 1 :
+                pygame.mixer.music.pause()
+                music_on = False
+            musica_anterior = keys["A"]
+            
+            
 paco = Robot()
 serialInput = Thread(target=serialCom, args=())
 inGame(paco)

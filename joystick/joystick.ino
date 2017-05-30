@@ -17,6 +17,10 @@ void setup() {
 Serial.begin(9600);
 pinMode(ejeX,INPUT);
 pinMode(ejeY,INPUT);
+pinMode(Boton1,INPUT);
+pinMode(Boton2,INPUT);
+pinMode(Boton3,INPUT);
+pinMode(Boton4,INPUT);
 }
 
 void loop() {
@@ -29,7 +33,7 @@ B = digitalRead(Boton2);
 C = digitalRead(Boton3);
 D = digitalRead(Boton4);
 
-String Data = "{'X' : " + DataEjeX + ", 'Y' : " + DataEjeY + ", 'A ': " + A + ", 'B' : " + B + ", 'C' : " + C + ", 'D' : " + D + "}";
+String Data = "{'X' : " + DataEjeX + ", 'Y' : " + DataEjeY + ", 'A': " + A + ", 'B' : " + B + ", 'C' : " + C + ", 'D' : " + D + "}";
 
 Serial.println(Data);
 
