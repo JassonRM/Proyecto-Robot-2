@@ -1,9 +1,9 @@
-#Control Robot
-#Proyecto programado
-#Jasson Rodriguez
-#Marco Herrera
+# Control Robot
+# Proyecto programado
+# Jasson Rodriguez
+# Marco Herrera
 
-#Importar librerias
+# Importar librerias
 import pygame
 import time
 import os
@@ -247,24 +247,35 @@ def controller(robot):
     while in_Game:
         keys = serialCom()
         if keys != None and not sliding:
+            # Jump
+            if keys["C"] or robot.tiempo != 0:
+                robot.jump()
+            # Right
             if keys["X"] > 561 and robot.get_posx() < windowWidth - 125:
+                # Slide
                 if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] > 950:
                     robot.slide(keys["X"],keys)
+                # Run-Shoot
                 elif keys["B"] == 1 and robot.tiempo == 0:
                     robot.runshoot(keys["X"],)
                     if disparo_anterior == 0 and not inbullet:
                         bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+200,robot.get_posy()+100))
                         bullet_t.start()
+                # Run
                 else:
                     robot.run(keys["X"])
+            # Left
             elif keys["X"] < 461 and robot.get_posx() > -75:
+                # Slide
                 if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] < 50:
                     robot.slide(keys["X"],keys)
+                # Run-Shoot
                 elif keys["B"] == 1 and robot.tiempo == 0:
                     robot.runshoot(keys["X"])
                     if disparo_anterior == 0 and not inbullet:
                         bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
                         bullet_t.start()
+                # Run
                 else:
                     robot.run(keys["X"])
         
@@ -281,6 +292,7 @@ def controller(robot):
             elif not right:
                 robot.cambiar_sprite_izquierda("idle1")
             disparo_anterior = keys["B"]
+            # Music
             if keys["A"] == 0 and musica_anterior == 1 and not music_on:
                 if pygame.mixer.music.get_pos() != -1:
                     pygame.mixer.music.unpause()
@@ -298,4 +310,3 @@ def controller(robot):
 paco = Robot()
 serialInput = Thread(target=serialCom, args=())
 inGame(paco)
-
