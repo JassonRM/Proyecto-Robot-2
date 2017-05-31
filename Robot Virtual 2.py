@@ -63,6 +63,9 @@ right = True
 global inbullet
 inbullet = False
 
+global sliding
+sliding = False
+
 class Robot:
     def __init__(self):
         self.Nombre = "Nombre"
@@ -174,25 +177,26 @@ class Robot:
             else:
                 self.cambiar_sprite_izquierda("jump"+ str(self.imagen))
 
-    def slide(self,velocidad):
-        self.set_posx((velocidad - 502) // 50)
-        if self.imagen >= 7:#15:
-            self.imagen = 1
-        else:
-            self.imagen += abs((velocidad - 511.5)/ 511.5)
-        if velocidad > 550:
-            #if self.imagen >= 8:
-                #self.cambiar_sprite_derecha("run"+ str(int(self.imagen)-7))
-            #else:
-                self.cambiar_sprite_derecha("slide"+ str(int((self.imagen))))
-        else:
-            #if self.imagen >= 8:
-                #self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)-7))
-            #else:
-                self.cambiar_sprite_izquierda("slide"+ str(int(self.imagen)))
-    
-            
-            
+    def slide(self,velocidad,keys):
+        global sliding
+        sliding  = True
+        while (velocidad > 550 or velocidad < 450) and self.get_posx() > -75 and self.get_posx() < windowWidth -125:
+                self.set_posx((velocidad - 502) // 50)
+                if self.imagen >= 7:
+                    self.imagen = 1
+                else:
+                    self.imagen += 0.125
+                if velocidad > 550:
+                    self.cambiar_sprite_derecha("slide"+ str(int((self.imagen))))
+                    velocidad -= 15
+                else:
+                    velocidad += 15
+                    self.cambiar_sprite_izquierda("slide"+ str(int(self.imagen)))
+                clock.tick(30)
+        while keys["Y"] > 750 or (keys["X"] > 561 or keys["X"] < 461):
+                keys = serialCom()
+        sliding = False
+        
 
 
 #Inicializar pygame
@@ -242,20 +246,20 @@ def controller(robot):
     disparo_anterior = 0
     while in_Game:
         keys = serialCom()
-        if keys != None :
+        if keys != None and not sliding:
             if keys["X"] > 561 and robot.get_posx() < windowWidth - 125:
-                if keys["Y"] > 750 and robot.tiempo == 0:
-                    robot.slide(keys["X"])
+                if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] > 950:
+                    robot.slide(keys["X"],keys)
                 elif keys["B"] == 1 and robot.tiempo == 0:
-                    robot.runshoot(keys["X"])
+                    robot.runshoot(keys["X"],)
                     if disparo_anterior == 0 and not inbullet:
                         bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+200,robot.get_posy()+100))
                         bullet_t.start()
                 else:
                     robot.run(keys["X"])
             elif keys["X"] < 461 and robot.get_posx() > -75:
-                if keys["Y"] > 750 and robot.tiempo == 0:
-                    robot.slide(keys["X"])
+                if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] < 50:
+                    robot.slide(keys["X"],keys)
                 elif keys["B"] == 1 and robot.tiempo == 0:
                     robot.runshoot(keys["X"])
                     if disparo_anterior == 0 and not inbullet:
@@ -263,12 +267,7 @@ def controller(robot):
                         bullet_t.start()
                 else:
                     robot.run(keys["X"])
-            else:
-                if right:
-                    robot.cambiar_sprite_derecha("idle1")
-                else:
-                    robot.cambiar_sprite_izquierda("idle1")
-            """
+        
             elif keys["B"] == 1 and robot.tiempo == 0:
                 robot.shoot()
                 if disparo_anterior == 0 and not inbullet:
@@ -291,8 +290,9 @@ def controller(robot):
             elif keys["A"] == 0 and musica_anterior == 1 :
                 pygame.mixer.music.pause()
                 music_on = False
-            musica_anterior = keys["A"]
-            """
+            
+        musica_anterior = keys["A"]
+            
             
             
 paco = Robot()
