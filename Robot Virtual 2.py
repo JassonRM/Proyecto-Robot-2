@@ -14,14 +14,14 @@ from threading import Thread
 puerto = 'COM3'
 arduino = serial.Serial(puerto, 9600, timeout=None)
 arduino.flushInput()
+global in_bullet
+in_bullet = True
+
 def serialCom():
-    while True:
         try:
             entrada = str(arduino.readline())
-            global keys
-            keys = eval(entrada[2:-5])
-            print( keys)
-            
+            keys = eval(entrada[(entrada.find("{")):entrada.find("}")+1])
+            return keys
         except:
             print("Data could not be read")
 
@@ -42,7 +42,7 @@ def cargarImagen(nombre):
 def cargarSonido(nombre):
     
     ruta = os.path.join("Audio", nombre)
-    sonido = pygame.mixer.Sound(ruta)
+    sonido = pygame.mixer.music.load(ruta)
     return sonido
 
 #Funcion: scale_img
@@ -54,9 +54,17 @@ def scale_img(image,width,height):
     return image
 
 spriteSize = 200
-Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize), "jump1":scale_img(cargarImagen("Jump (1).png"),spriteSize,spriteSize), "jump2":scale_img(cargarImagen("Jump (2).png"),spriteSize,spriteSize), "jump3":scale_img(cargarImagen("Jump (3).png"),spriteSize,spriteSize), "jump4":scale_img(cargarImagen("Jump (4).png"),spriteSize,spriteSize), "jump5":scale_img(cargarImagen("Jump (5).png"),spriteSize,spriteSize), "jump6":scale_img(cargarImagen("Jump (6).png"),spriteSize,spriteSize), "jump7":scale_img(cargarImagen("Jump (7).png"),spriteSize,spriteSize), "jump8":scale_img(cargarImagen("Jump (8).png"),spriteSize,spriteSize), "jump9":scale_img(cargarImagen("Jump (9).png"),spriteSize,spriteSize), "jump10":scale_img(cargarImagen("Jump (10).png"),spriteSize,spriteSize)}
+bulletSize = 20
+Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize), "jump1":scale_img(cargarImagen("Jump (1).png"),spriteSize,spriteSize), "jump2":scale_img(cargarImagen("Jump (2).png"),spriteSize,spriteSize), "jump3":scale_img(cargarImagen("Jump (3).png"),spriteSize,spriteSize), "jump4":scale_img(cargarImagen("Jump (4).png"),spriteSize,spriteSize), "jump5":scale_img(cargarImagen("Jump (5).png"),spriteSize,spriteSize), "jump6":scale_img(cargarImagen("Jump (6).png"),spriteSize,spriteSize), "jump7":scale_img(cargarImagen("Jump (7).png"),spriteSize,spriteSize), "jump8":scale_img(cargarImagen("Jump (8).png"),spriteSize,spriteSize), "jump9":scale_img(cargarImagen("Jump (9).png"),spriteSize,spriteSize), "jump10":scale_img(cargarImagen("Jump (10).png"),spriteSize,spriteSize)
+          , "run_s1":scale_img(cargarImagen("RunShoot (1).png"),spriteSize,spriteSize), "run_s2":scale_img(cargarImagen("RunShoot (2).png"),spriteSize,spriteSize),"run_s3":scale_img(cargarImagen("RunShoot (3).png"),spriteSize,spriteSize), "run_s4":scale_img(cargarImagen("RunShoot (4).png"),spriteSize,spriteSize), "run_s5":scale_img(cargarImagen("RunShoot (5).png"),spriteSize,spriteSize), "run_s6":scale_img(cargarImagen("RunShoot (6).png"),spriteSize,spriteSize), "run_s7":scale_img(cargarImagen("RunShoot (7).png"),spriteSize,spriteSize), "run_s8":scale_img(cargarImagen("RunShoot (8).png"),spriteSize,spriteSize), "shoot1":scale_img(cargarImagen("Shoot (1).png"),spriteSize,spriteSize), "bullet1":scale_img(cargarImagen("Bullet_001.png"),bulletSize,bulletSize),"slide1":scale_img(cargarImagen("Slide (1).png"),spriteSize,spriteSize),"slide2":scale_img(cargarImagen("Slide (2).png"),spriteSize,spriteSize),"slide3":scale_img(cargarImagen("Slide (3).png"),spriteSize,spriteSize),"slide4":scale_img(cargarImagen("Slide (4).png"),spriteSize,spriteSize),"slide5":scale_img(cargarImagen("Slide (5).png"),spriteSize,spriteSize),"slide6":scale_img(cargarImagen("Slide (6).png"),spriteSize,spriteSize),"slide7":scale_img(cargarImagen("Slide (7).png"),spriteSize,spriteSize),"slide8":scale_img(cargarImagen("Slide (8).png"),spriteSize,spriteSize)}
 global right
 right = True
+
+global inbullet
+inbullet = False
+
+global sliding
+sliding = False
 
 class Robot:
     def __init__(self):
@@ -100,45 +108,51 @@ class Robot:
         right = False
         self.sprite = pygame.transform.flip(Sprite[nombre],True,False)
 
-    def turnRight(self):
-        if self.x_velocidad < 0:
-            self.acelerar_x(2.25)
-        else:
-            self.acelerar_x(1)
+    def run(self,velocidad):
+        self.set_posx((velocidad - 502) // 40)
         if self.tiempo == 0:
             if self.imagen >= 8:
                 self.imagen = 1
             else:
-                self.imagen += 0.5
-            self.cambiar_sprite_derecha("run"+ str(int(self.imagen)))
+                self.imagen += abs((velocidad - 511.5)/ 511.5)
+            if velocidad > 550:
+                self.cambiar_sprite_derecha("run"+ str(int((self.imagen))))
+            else:
+                self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
+    
+    def runshoot(self,velocidad):
+        self.set_posx((velocidad - 502) // 40)
+        if self.tiempo == 0:
+            if self.imagen >= 8:
+                self.imagen = 1
+            else:
+                self.imagen += abs((velocidad - 511.5)/ 511.5)
+            if velocidad > 550:
+                self.cambiar_sprite_derecha("run_s"+ str(int((self.imagen))))
+            else:
+                self.cambiar_sprite_izquierda("run_s"+ str(int(self.imagen)))
 
-    def turnLeft(self):
-        if self.x_velocidad < 0:
-            self.acelerar_x(-2.25)
+    def shoot(self):
+        if right:
+            self.cambiar_sprite_derecha("shoot1")
         else:
-            self.acelerar_x(-1)
-        if self.tiempo == 0:
-            if self.imagen >= 8:
-                self.imagen = 1
-            else:
-                self.imagen += 0.5
-            self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
-        
-    def stop(self):
-        if self.imagen >= 8:
-            self.imagen = 1                        
-        if self.x_velocidad < -1:
-            self.acelerar_x(1.5)
-            self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
-        elif self.x_velocidad > 1:
-            self.acelerar_x(-1.5)
-            self.cambiar_sprite_derecha("run"+ str(int(self.imagen)))       
+            self.cambiar_sprite_izquierda("shoot1")
+
+    def bullet(self,posx,posy):
+        global inbullet
+        inbullet = True
+        if right:
+            aumenta = 1
+            imagen_bala = Sprite["bullet1"]
         else:
-            if right:
-                self.cambiar_sprite_derecha("idle1")
-            else:
-                self.cambiar_sprite_izquierda("idle1")
-        self.imagen += 0.5
+            aumenta = -1
+            imagen_bala = pygame.transform.flip(Sprite["bullet1"],True,False)
+        while posx > 0 and posx < 1000:
+            posx += aumenta
+            ventana.blit(imagen_bala,(posx,posy))
+            pygame.display.flip()
+        inbullet = False
+        return None
 
     def jump(self):
         v0 = 1000
@@ -162,7 +176,27 @@ class Robot:
                 self.cambiar_sprite_derecha("jump"+ str(self.imagen))
             else:
                 self.cambiar_sprite_izquierda("jump"+ str(self.imagen))
-            
+
+    def slide(self,velocidad,keys):
+        global sliding
+        sliding  = True
+        while (velocidad > 550 or velocidad < 450) and self.get_posx() > -75 and self.get_posx() < windowWidth -125:
+                self.set_posx((velocidad - 502) // 50)
+                if self.imagen >= 7:
+                    self.imagen = 1
+                else:
+                    self.imagen += 0.125
+                if velocidad > 550:
+                    self.cambiar_sprite_derecha("slide"+ str(int((self.imagen))))
+                    velocidad -= 15
+                else:
+                    velocidad += 15
+                    self.cambiar_sprite_izquierda("slide"+ str(int(self.imagen)))
+                clock.tick(30)
+        while keys["Y"] > 750 or (keys["X"] > 561 or keys["X"] < 461):
+                keys = serialCom()
+        sliding = False
+        
 
 
 #Inicializar pygame
@@ -173,49 +207,94 @@ clock = pygame.time.Clock()
 pygame.mixer.init()
 
 #Crear ventana
-windowWidth = 800
+windowWidth = 1000
 windowHeight = 600
 ventana = pygame.display.set_mode((windowWidth,windowHeight))
 pygame.display.set_caption("Robot Virtual 2")
+
+#Variable del juego
+in_Game = True
 
 #Funcion: inGame
 #Entrada: instancia del robot
 #Salida: Entradas y salidas de las animaciones
 #Restricciones: robot es una instancia
 def inGame (robot):
-    in_Game = True
-    serialInput.start()
-    while in_Game :
-        
+    global in_Game
+    control = Thread(target=controller, args=(robot,))
+    control.start()
+    while in_Game:
+        ventana.fill((255,255,255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
-            if event.type == pygame.KEYDOWN :
-                if event.key == pygame.K_LEFT:
-                    robot.turnLeft()
-                elif event.key == pygame.K_RIGHT:
-                    robot.turnRight()
-                elif event.key == pygame.K_UP:
-                    robot.jump()
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    robot.stop()
-                if event.key == pygame.K_UP:
-                    if robot.tiempo != 0:
-                        robot.jump()
-                    else:
-                        robot.stop()
-            pygame.event.clear()
-            pygame.event.post(event)
-                       
-        ventana.fill((255,255,255))
+                        
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
-        pygame.display.update()
+        pygame.display.flip()
         clock.tick(30)
 
     pygame.quit()
     sys.exit()
 
+
+cancion = "High.wav"
+cargarSonido(cancion)
+
+def controller(robot):
+    music_on = False
+    musica_anterior = 0
+    disparo_anterior = 0
+    while in_Game:
+        keys = serialCom()
+        if keys != None and not sliding:
+            if keys["X"] > 561 and robot.get_posx() < windowWidth - 125:
+                if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] > 950:
+                    robot.slide(keys["X"],keys)
+                elif keys["B"] == 1 and robot.tiempo == 0:
+                    robot.runshoot(keys["X"],)
+                    if disparo_anterior == 0 and not inbullet:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+200,robot.get_posy()+100))
+                        bullet_t.start()
+                else:
+                    robot.run(keys["X"])
+            elif keys["X"] < 461 and robot.get_posx() > -75:
+                if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] < 50:
+                    robot.slide(keys["X"],keys)
+                elif keys["B"] == 1 and robot.tiempo == 0:
+                    robot.runshoot(keys["X"])
+                    if disparo_anterior == 0 and not inbullet:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
+                        bullet_t.start()
+                else:
+                    robot.run(keys["X"])
+        
+            elif keys["B"] == 1 and robot.tiempo == 0:
+                robot.shoot()
+                if disparo_anterior == 0 and not inbullet:
+                    if right:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+150,robot.get_posy()+100))
+                    else:
+                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
+                    bullet_t.start()
+            elif right:
+                robot.cambiar_sprite_derecha("idle1")
+            elif not right:
+                robot.cambiar_sprite_izquierda("idle1")
+            disparo_anterior = keys["B"]
+            if keys["A"] == 0 and musica_anterior == 1 and not music_on:
+                if pygame.mixer.music.get_pos() != -1:
+                    pygame.mixer.music.unpause()
+                else:
+                    pygame.mixer.music.play(-1)
+                music_on = True         
+            elif keys["A"] == 0 and musica_anterior == 1 :
+                pygame.mixer.music.pause()
+                music_on = False
+            
+        musica_anterior = keys["A"]
+            
+            
+            
 paco = Robot()
 serialInput = Thread(target=serialCom, args=())
 inGame(paco)
