@@ -11,7 +11,8 @@ import sys
 import serial
 from threading import Thread
 
-puerto = 'COM3'
+#puerto = '/dev/tty.usbmodem1411131'
+puerto = '/dev/tty.HC-06-DevB'
 arduino = serial.Serial(puerto, 9600, timeout=None)
 arduino.flushInput()
 global in_bullet
@@ -57,13 +58,10 @@ spriteSize = 200
 bulletSize = 20
 Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize), "run1":scale_img(cargarImagen("Run (1).png"),spriteSize,spriteSize), "run2":scale_img(cargarImagen("Run (2).png"),spriteSize,spriteSize), "run3":scale_img(cargarImagen("Run (3).png"),spriteSize,spriteSize), "run4":scale_img(cargarImagen("Run (4).png"),spriteSize,spriteSize), "run5":scale_img(cargarImagen("Run (5).png"),spriteSize,spriteSize), "run6":scale_img(cargarImagen("Run (6).png"),spriteSize,spriteSize), "run7":scale_img(cargarImagen("Run (7).png"),spriteSize,spriteSize), "run8":scale_img(cargarImagen("Run (8).png"),spriteSize,spriteSize), "jump1":scale_img(cargarImagen("Jump (1).png"),spriteSize,spriteSize), "jump2":scale_img(cargarImagen("Jump (2).png"),spriteSize,spriteSize), "jump3":scale_img(cargarImagen("Jump (3).png"),spriteSize,spriteSize), "jump4":scale_img(cargarImagen("Jump (4).png"),spriteSize,spriteSize), "jump5":scale_img(cargarImagen("Jump (5).png"),spriteSize,spriteSize), "jump6":scale_img(cargarImagen("Jump (6).png"),spriteSize,spriteSize), "jump7":scale_img(cargarImagen("Jump (7).png"),spriteSize,spriteSize), "jump8":scale_img(cargarImagen("Jump (8).png"),spriteSize,spriteSize), "jump9":scale_img(cargarImagen("Jump (9).png"),spriteSize,spriteSize), "jump10":scale_img(cargarImagen("Jump (10).png"),spriteSize,spriteSize)
           , "run_s1":scale_img(cargarImagen("RunShoot (1).png"),spriteSize,spriteSize), "run_s2":scale_img(cargarImagen("RunShoot (2).png"),spriteSize,spriteSize),"run_s3":scale_img(cargarImagen("RunShoot (3).png"),spriteSize,spriteSize), "run_s4":scale_img(cargarImagen("RunShoot (4).png"),spriteSize,spriteSize), "run_s5":scale_img(cargarImagen("RunShoot (5).png"),spriteSize,spriteSize), "run_s6":scale_img(cargarImagen("RunShoot (6).png"),spriteSize,spriteSize), "run_s7":scale_img(cargarImagen("RunShoot (7).png"),spriteSize,spriteSize), "run_s8":scale_img(cargarImagen("RunShoot (8).png"),spriteSize,spriteSize), "shoot1":scale_img(cargarImagen("Shoot (1).png"),spriteSize,spriteSize), "bullet1":scale_img(cargarImagen("Bullet_001.png"),bulletSize,bulletSize),"slide1":scale_img(cargarImagen("Slide (1).png"),spriteSize,spriteSize),"slide2":scale_img(cargarImagen("Slide (2).png"),spriteSize,spriteSize),"slide3":scale_img(cargarImagen("Slide (3).png"),spriteSize,spriteSize),"slide4":scale_img(cargarImagen("Slide (4).png"),spriteSize,spriteSize),"slide5":scale_img(cargarImagen("Slide (5).png"),spriteSize,spriteSize),"slide6":scale_img(cargarImagen("Slide (6).png"),spriteSize,spriteSize),"slide7":scale_img(cargarImagen("Slide (7).png"),spriteSize,spriteSize),"slide8":scale_img(cargarImagen("Slide (8).png"),spriteSize,spriteSize)}
-global right
+
+# Variables globales
 right = True
-
-global inbullet
 inbullet = False
-
-global sliding
 sliding = False
 
 class Robot:
@@ -74,7 +72,6 @@ class Robot:
         self.posy = 300
         self.x_velocidad = 0
         self.y_velocidad = 0
-        self.aceleracion = 1
         self.imagen = 2
         self.tiempo = 0
         
@@ -92,11 +89,6 @@ class Robot:
         
     def set_posy(self, pos):
         self.posy += pos
-
-
-    def acelerar_x(self,direccion): #direccion 1 acelera der , direccion -1 acelera izq
-        self.x_velocidad += direccion*self.aceleracion
-        self.set_posx(self.x_velocidad)
 
     def cambiar_sprite_derecha(self,nombre):
         self.sprite = Sprite[nombre]
@@ -224,17 +216,18 @@ def inGame (robot):
     control = Thread(target=controller, args=(robot,))
     control.start()
     while in_Game:
-        ventana.fill((255,255,255))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_Game = False
-                        
+                pygame.quit()
+                sys.exit()
+                break
+        ventana.fill((255, 255, 255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         pygame.display.flip()
         clock.tick(30)
 
-    pygame.quit()
-    sys.exit()
 
 
 cancion = "High.wav"
@@ -287,9 +280,9 @@ def controller(robot):
                     else:
                         bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
                     bullet_t.start()
-            elif right:
+            elif right and robot.tiempo == 0:
                 robot.cambiar_sprite_derecha("idle1")
-            elif not right:
+            elif not right and robot.tiempo == 0:
                 robot.cambiar_sprite_izquierda("idle1")
             disparo_anterior = keys["B"]
             # Music
@@ -303,7 +296,7 @@ def controller(robot):
                 pygame.mixer.music.pause()
                 music_on = False
             
-        musica_anterior = keys["A"]
+            musica_anterior = keys["A"]
             
             
             
