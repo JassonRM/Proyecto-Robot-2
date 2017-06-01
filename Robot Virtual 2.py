@@ -162,26 +162,6 @@ class Robot:
         else:
             self.cambiar_sprite_izquierda("shoot1")
 
-    #Metodo: bullet
-    #Entrada: posicion en X y Y
-    #Salida: muestra la bala disparada
-    #Restricciones: posx y posy enteros
-    def bullet(self,posx,posy):
-        global inbullet
-        inbullet = True
-        if right:
-            aumenta = 1
-            imagen_bala = Sprite["bullet1"]
-        else:
-            aumenta = -1
-            imagen_bala = pygame.transform.flip(Sprite["bullet1"],True,False)
-        while posx > 0 and posx < 1000:
-            posx += aumenta
-            ventana.blit(imagen_bala,(posx,posy))
-            pygame.display.flip()
-        inbullet = False
-        return None
-
     #Metodo: jump
     #Entrada: ninguna
     #Salida: cambia la posicion en y y el sprite para que salte
@@ -232,7 +212,30 @@ class Robot:
         while keys["Y"] > 750 or (keys["X"] > 561 or keys["X"] < 461):
                 keys = serialCom()
         sliding = False
-        
+
+class Bullet:
+    def __init__(self, robot):
+        if right:
+            self.posx = robot.get_posx() + 150
+            self.posy = robot.get_posy() + 100
+            self.velocidad = 2
+            self.imagen = Sprite["bullet1"]
+        else:
+            self.posx = robot.get_posx()
+            self.posy = robot.get_posy() + 100
+            self.velocidad = -2
+            self.imagen = pygame.transform.flip(Sprite["bullet1"],True,False)
+
+    def shoot(self):
+        global inbullet
+        inbullet = True
+        while self.posx > 0 and self.posx < 1000:
+            self.posx += self.velocidad
+            ventana.blit(self.imagen, (self.posx, self.posy))
+            pygame.display.flip()
+        inbullet = False
+
+        return None
 
 
 #Inicializar pygame
@@ -318,13 +321,11 @@ def controller(robot):
                     robot.run(keys["X"])
         
             elif keys["B"] == 1 and robot.tiempo == 0:
-                robot.shoot()
-                if disparo_anterior == 0 and not inbullet:
-                    if right:
-                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+150,robot.get_posy()+100))
-                    else:
-                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
-                    bullet_t.start()
+                bala = Bullet(robot)
+                bala.shoot()
+                disparo = Thread(target=robot.shoot, args=())
+                disparo.start()
+
             elif right and robot.tiempo == 0:
                 robot.cambiar_sprite_derecha("idle1")
             elif not right and robot.tiempo == 0:
@@ -336,7 +337,6 @@ def controller(robot):
                     pygame.mixer.music.unpause()
                 else:
                     pygame.mixer.music.play(-1)
-                    print("Reproduciendo")
                 music_on = True         
             elif keys["A"] == 0 and musica_anterior == 1 :
                 pygame.mixer.music.pause()
