@@ -11,13 +11,21 @@ import sys
 import serial
 from threading import Thread
 
+#Puerto USB
 #puerto = '/dev/tty.usbmodem1411131'
+
+#Puerto Bluetooth
 puerto = '/dev/tty.HC-06-DevB'
+
 arduino = serial.Serial(puerto, 9600, timeout=None)
 arduino.flushInput()
 global in_bullet
 in_bullet = True
 
+#Funcion: serialCom
+#Entrada: Dispositivo
+#Salida: Diccionario con las teclas
+#Restricciones: Dispostivo conectado
 def serialCom():
         try:
             entrada = str(arduino.readline())
@@ -41,7 +49,6 @@ def cargarImagen(nombre):
 #Salida: sonido con ese nombre en el directorio audio
 #Restricciones: nombre es un string
 def cargarSonido(nombre):
-    
     ruta = os.path.join("Audio", nombre)
     sonido = pygame.mixer.music.load(ruta)
     return sonido
@@ -66,7 +73,6 @@ sliding = False
 
 class Robot:
     def __init__(self):
-        self.Nombre = "Nombre"
         self.sprite = Sprite["idle1"]
         self.posx = 300
         self.posy = 300
@@ -74,32 +80,50 @@ class Robot:
         self.y_velocidad = 0
         self.imagen = 2
         self.tiempo = 0
-        
-    def get_nombre (self):
-        return self.Nombre
-    
+
+    #Metodo: get_posx
+    #Entrada: ninguna
+    #Salida: posicion en x del robot
+    #Restricciones: ninguna
     def get_posx(self):
         return self.posx
-    
+
+    #Metodo: get_posy
+    #Entrada: ninguna
+    #Salida: posicion en y del robot
+    #Restricciones: ninguna
     def get_posy(self):
         return self.posy
-    
+
+    #Metodo: set_posx
+    #Entrada: un cambio en la posicion
+    #Salida: Cambia la posicion de la instancia
+    #Restricciones: pos entero
     def set_posx(self, pos):
         self.posx += pos
-        
-    def set_posy(self, pos):
-        self.posy += pos
 
+    #Metodo: cambiar_sprite_derecha
+    #Entrada: nombre del sprite
+    #Salida: Cambia el sprite de la instancia viendo hacia la derecha
+    #Restricciones: nombre valido
     def cambiar_sprite_derecha(self,nombre):
         self.sprite = Sprite[nombre]
         global right
         right = True
-        
+
+    #Metodo: cambiar_sprite_izquierda
+    #Entrada: nombre del sprite
+    #Salida: Cambia el sprite de la instancia vienda hacia la izquierda
+    #Restricciones: nombre valido
     def cambiar_sprite_izquierda(self,nombre):
         global right 
         right = False
         self.sprite = pygame.transform.flip(Sprite[nombre],True,False)
 
+    #Metodo: run
+    #Entrada: velocidad
+    #Salida: cambia la posicion y el sprite del robot de acuerdo a la velocidad
+    #Restricciones: velocidad entero
     def run(self,velocidad):
         self.set_posx((velocidad - 502) // 40)
         if self.tiempo == 0:
@@ -111,7 +135,11 @@ class Robot:
                 self.cambiar_sprite_derecha("run"+ str(int((self.imagen))))
             else:
                 self.cambiar_sprite_izquierda("run"+ str(int(self.imagen)))
-    
+
+    #Metodo: runshoot
+    #Entrada: velocidad
+    #Salida: cambia la posicion y el sprite del robot de acuerdo a la velocidad, disparando mientras corre
+    #Restricciones: velocidad entero
     def runshoot(self,velocidad):
         self.set_posx((velocidad - 502) // 40)
         if self.tiempo == 0:
@@ -124,12 +152,20 @@ class Robot:
             else:
                 self.cambiar_sprite_izquierda("run_s"+ str(int(self.imagen)))
 
+    #Metodo: shoot
+    #Entrada: ninguna
+    #Salida: cambia el sprite a posicion de disparo
+    #Restricciones:
     def shoot(self):
         if right:
             self.cambiar_sprite_derecha("shoot1")
         else:
             self.cambiar_sprite_izquierda("shoot1")
 
+    #Metodo: bullet
+    #Entrada: posicion en X y Y
+    #Salida: muestra la bala disparada
+    #Restricciones: posx y posy enteros
     def bullet(self,posx,posy):
         global inbullet
         inbullet = True
@@ -146,6 +182,10 @@ class Robot:
         inbullet = False
         return None
 
+    #Metodo: jump
+    #Entrada: ninguna
+    #Salida: cambia la posicion en y y el sprite para que salte
+    #Restricciones: ninguna
     def jump(self):
         v0 = 1000
         aceleracion = -4000
@@ -169,6 +209,10 @@ class Robot:
             else:
                 self.cambiar_sprite_izquierda("jump"+ str(self.imagen))
 
+    #Metodo: slide
+    #Entrada: velocidad y teclas
+    #Salida: muestra la animacion para deslizarse
+    #Restricciones: velocidad entero y teclas un diccionario valido
     def slide(self,velocidad,keys):
         global sliding
         sliding  = True
@@ -196,7 +240,9 @@ pygame.init()
 clock = pygame.time.Clock()
 
 #Inicializar el mixer de pygame
-pygame.mixer.init()
+pygame.mixer.init(frequency=8000)
+cancion = "Epic Orchestral Action.wav"
+cargarSonido(cancion)
 
 #Crear ventana
 windowWidth = 1000
@@ -228,11 +274,10 @@ def inGame (robot):
         pygame.display.flip()
         clock.tick(30)
 
-
-
-cancion = "High.wav"
-cargarSonido(cancion)
-
+#Funcion: controller
+#Entrada: instancia del robot a controlar
+#Salida: Llama a todos los metodos del robot
+#Restricciones: Que la instancia exista
 def controller(robot):
     music_on = False
     musica_anterior = 0
@@ -291,6 +336,7 @@ def controller(robot):
                     pygame.mixer.music.unpause()
                 else:
                     pygame.mixer.music.play(-1)
+                    print("Reproduciendo")
                 music_on = True         
             elif keys["A"] == 0 and musica_anterior == 1 :
                 pygame.mixer.music.pause()
@@ -299,7 +345,7 @@ def controller(robot):
             musica_anterior = keys["A"]
             
             
-            
+#Ejecutar el programa
 paco = Robot()
 serialInput = Thread(target=serialCom, args=())
 inGame(paco)
