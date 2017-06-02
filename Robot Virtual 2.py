@@ -363,7 +363,7 @@ def controller(robot):
                 if keys["Y"] > 600 and robot.tiempo == 0 and keys["X"] > 950:
                     robot.slide(keys["X"],keys)
                 # Run-Shoot
-                elif keys["B"] == 1 and robot.tiempo == 0:
+                elif keys["B"] == 1 and robot.tiempo == 0 and not inbullet:
                     inbullet = True
                     bala = Bullet(robot)
                     robot.runshoot(keys["X"])
