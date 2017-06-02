@@ -15,12 +15,11 @@ from threading import Thread
 #puerto = '/dev/tty.usbmodem1411131'
 
 #Puerto Bluetooth
-puerto = '/dev/tty.HC-06-DevB'
+puerto = 'com3'
 
 arduino = serial.Serial(puerto, 9600, timeout=None)
 arduino.flushInput()
-global in_bullet
-in_bullet = True
+
 
 #Funcion: serialCom
 #Entrada: Dispositivo
@@ -70,6 +69,7 @@ Sprite = {"idle1":scale_img(cargarImagen("Idle (1).png"),spriteSize,spriteSize),
 right = True
 inbullet = False
 sliding = False
+bala = None
 
 class Robot:
     def __init__(self):
@@ -218,25 +218,20 @@ class Bullet:
         if right:
             self.posx = robot.get_posx() + 150
             self.posy = robot.get_posy() + 100
-            self.velocidad = 2
+            self.velocidad = 20
             self.imagen = Sprite["bullet1"]
         else:
             self.posx = robot.get_posx()
             self.posy = robot.get_posy() + 100
-            self.velocidad = -2
+            self.velocidad = -20
             self.imagen = pygame.transform.flip(Sprite["bullet1"],True,False)
 
     def shoot(self):
         global inbullet
-        inbullet = True
-        while self.posx > 0 and self.posx < 1000:
+        if self.posx > 0 and self.posx < 1000:
             self.posx += self.velocidad
-            ventana.blit(self.imagen, (self.posx, self.posy))
-            pygame.display.flip()
-        inbullet = False
-
-        return None
-
+        else:
+            inbullet = False
 
 #Inicializar pygame
 pygame.init()
@@ -274,6 +269,8 @@ def inGame (robot):
                 break
         ventana.fill((255, 255, 255))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
+        if inbullet:
+            ventana.blit(bala.imagen, (bala.posx,bala.posy))
         pygame.display.flip()
         clock.tick(30)
 
@@ -282,6 +279,8 @@ def inGame (robot):
 #Salida: Llama a todos los metodos del robot
 #Restricciones: Que la instancia exista
 def controller(robot):
+    global inbullet
+    global bala
     music_on = False
     musica_anterior = 0
     disparo_anterior = 0
@@ -289,6 +288,8 @@ def controller(robot):
         keys = serialCom()
         if keys != None and not sliding:
             # Jump
+            if inbullet:
+                bala.shoot()
             if keys["C"] or robot.tiempo != 0:
                 robot.jump()
             # Right
@@ -298,10 +299,10 @@ def controller(robot):
                     robot.slide(keys["X"],keys)
                 # Run-Shoot
                 elif keys["B"] == 1 and robot.tiempo == 0:
-                    robot.runshoot(keys["X"],)
-                    if disparo_anterior == 0 and not inbullet:
-                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx()+200,robot.get_posy()+100))
-                        bullet_t.start()
+                    inbullet = True
+                    bala = Bullet(robot)
+                    robot.runshoot(keys["X"])
+                    
                 # Run
                 else:
                     robot.run(keys["X"])
@@ -311,20 +312,19 @@ def controller(robot):
                 if keys["Y"] > 750 and robot.tiempo == 0 and keys["X"] < 50:
                     robot.slide(keys["X"],keys)
                 # Run-Shoot
-                elif keys["B"] == 1 and robot.tiempo == 0:
+                elif keys["B"] == 1 and robot.tiempo == 0 and not inbullet:
+                    inbullet = True
+                    bala = Bullet(robot)
                     robot.runshoot(keys["X"])
-                    if disparo_anterior == 0 and not inbullet:
-                        bullet_t = Thread(target = robot.bullet, args= (robot.get_posx(),robot.get_posy()+100))
-                        bullet_t.start()
+                    
                 # Run
                 else:
                     robot.run(keys["X"])
         
-            elif keys["B"] == 1 and robot.tiempo == 0:
+            elif keys["B"] == 1 and robot.tiempo == 0 and not inbullet:
+                inbullet = True
                 bala = Bullet(robot)
-                bala.shoot()
-                disparo = Thread(target=robot.shoot, args=())
-                disparo.start()
+                robot.shoot()
 
             elif right and robot.tiempo == 0:
                 robot.cambiar_sprite_derecha("idle1")
