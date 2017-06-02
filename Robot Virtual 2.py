@@ -11,10 +11,6 @@ import sys
 import serial
 from threading import Thread
 
-#Puerto USB
-#puerto = '/dev/tty.usbmodem1411131'
-
-#Puerto Bluetooth
 puerto = '/dev/tty.HC-06-DevB'
 
 #objeto serial
@@ -113,7 +109,7 @@ class Robot:
     def __init__(self):
         self.sprite = Sprite["idle1"]
         self.posx = 300
-        self.posy = 300
+        self.posy = 675
         self.x_velocidad = 0
         self.y_velocidad = 0
         self.imagen = 2
@@ -223,12 +219,12 @@ class Robot:
     def jump(self):
         v0 = 1000
         aceleracion = -4000
-        posy = 300
+        posy = 675
         delta_pos = v0 * self.tiempo + (aceleracion * self.tiempo ** 2) / 2
         self.tiempo += 1 / 30
         self.posy = posy - delta_pos
         if delta_pos < 0:
-            self.posy = 300
+            self.posy = posy
             self.tiempo = 0
         self.imagen = int(self.tiempo // (0.5666666666666667 / 10))
         if self.imagen == 0:
@@ -286,7 +282,7 @@ class Bullet:
     #Restricciones: ninguna
     def shoot(self):
         global inbullet
-        if self.posx > 0 and self.posx < 1000:
+        if self.posx > 0 and self.posx < windowWidth:
             self.posx += self.velocidad
         else:
             inbullet = False
@@ -306,10 +302,11 @@ presentacion = cargarSonido(mensaje)
 
 
 #Crear ventana
-windowWidth = 1000
-windowHeight = 600
-ventana = pygame.display.set_mode((windowWidth,windowHeight))
+windowWidth = 1650
+windowHeight = 1050
+ventana = pygame.display.set_mode((windowWidth,windowHeight), pygame.FULLSCREEN)
 pygame.display.set_caption("Robot Virtual 2")
+bg = scale_img(cargarImagen("bg.png"), windowWidth,windowHeight)
 
 #Variable del juego
 in_Game = True
@@ -331,6 +328,7 @@ def inGame (robot):
                 sys.exit()
                 break
         ventana.fill((255, 255, 255))
+        ventana.blit(bg,(0,0))
         ventana.blit(robot.sprite,(robot.posx,robot.posy))
         if inbullet:
             ventana.blit(bala.imagen, (bala.posx,bala.posy))
