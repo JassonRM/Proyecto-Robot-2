@@ -23,13 +23,14 @@ pinMode(Boton1,INPUT);
 pinMode(Boton2,INPUT);
 pinMode(Boton3,INPUT);
 pinMode(Boton4,INPUT);
+pinMode(Boton5,INPUT_PULLUP);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   
-DataEjeX = analogRead(ejeX);
-DataEjeY = analogRead(ejeY);
+DataEjeX = 512-(analogRead(ejeX) - 496);
+DataEjeY = 512-(analogRead(ejeY)-511);
 A = digitalRead(Boton1);
 B = digitalRead(Boton2);
 C = digitalRead(Boton3);
