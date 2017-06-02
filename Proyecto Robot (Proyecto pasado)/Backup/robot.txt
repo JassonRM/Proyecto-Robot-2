@@ -1,4 +1,0 @@
-Nombre: Nohe
-Imagen: front.gif
-Fecha de creacion: 5 de abril de 2017
-Energia: 100
