@@ -23,7 +23,7 @@ pinMode(Boton1,INPUT);
 pinMode(Boton2,INPUT);
 pinMode(Boton3,INPUT);
 pinMode(Boton4,INPUT);
-pinMode(Boton5,INPUT);
+pinMode(Boton5,INPUT_PULLUP);
 }
 
 void loop() {
