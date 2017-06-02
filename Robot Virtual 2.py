@@ -15,7 +15,7 @@ from threading import Thread
 #puerto = '/dev/tty.usbmodem1411131'
 
 #Puerto Bluetooth
-puerto = 'com3'
+puerto = '/dev/tty.HC-06-DevB'
 
 #objeto serial
 arduino = serial.Serial(puerto, 9600, timeout=None)
